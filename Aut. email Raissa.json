@@ -1,0 +1,290 @@
+{
+  "name": "Aut. email Raissa",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -544,
+        -48
+      ],
+      "id": "cebecb8e-fa0d-4b5b-82e1-76f21a7a353a",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CDY7aWYi7Awx0KGE",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cb19a3ac-336c-4b72-92d2-ab628cdda15a",
+              "leftValue": "={{$binary.attachment_0 !== undefined}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "0096cc50-bb6b-4a8b-8019-cac0c2c77a21",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -208,
+        -48
+      ],
+      "id": "03fa38dd-5c5f-44cd-ac43-0c2c460dc8a4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=C:/n8n/csv//{{$json.filename}}",
+        "dataPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -144
+      ],
+      "id": "aed3c762-22c9-4010-b1c8-869117033cf3",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eacd0d80-4fda-43d9-a443-dbfc1443119a",
+              "name": "filename",
+              "value": "={{ $binary.attachment_0.fileName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        -144
+      ],
+      "id": "5a228e5a-b25f-4688-8437-3c1fdc3c903a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/cotacao_raissa/usd-brl",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        352,
+        -144
+      ],
+      "id": "7b677c3d-ccb9-469d-86af-5a9b7c1bcf61",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "emailType": "text",
+        "message": "Olá!\n\nO e-mail foi processado, porém informamos que não há nenhum anexo. Ficamos no aguado deste.\n\nAtenciosamente,\n\nEquipe ONFLY",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        32,
+        64
+      ],
+      "id": "34c82e95-e592-4dee-892d-9863b941eb0f",
+      "name": "Resposta SEM ANEXO",
+      "webhookId": "d634a202-b41f-4978-83a7-817a09b7264f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CDY7aWYi7Awx0KGE",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "emailType": "text",
+        "message": "=Olá!\n\nEspero que esteja bem.\n\nSeu anexo foi recebido e o processo foi concluido.\n\nArquivo: {{ $('Edit Fields').item.json.filename }}\n\nCotação do Dólar hoje: \n\n{{ $json.description }} \n\nAtenciosamente,\n\nEquipe ONFLY",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        -144
+      ],
+      "id": "2e250e3a-e840-40cf-9ffa-66207ee74b96",
+      "name": "Resposta COM ANEXO",
+      "webhookId": "0a767fb2-2c43-4156-889d-9bc327a84c21",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CDY7aWYi7Awx0KGE",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "simple": false,
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -368,
+        -48
+      ],
+      "id": "6dba0c3b-a2a6-4234-aec7-08a553ae2f51",
+      "name": "Get a message",
+      "webhookId": "c09628be-bd5b-4f67-9ebd-7e378dff181a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CDY7aWYi7Awx0KGE",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resposta SEM ANEXO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Resposta COM ANEXO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "257308b2-00ee-484c-ae9f-198b47fd9c6a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bcb73b8b7dc1bc8aae18d3e704ec939dbf53cf89016215a06dd9e5fba3907da1"
+  },
+  "id": "qXqo6Wn5shgoYvbm",
+  "tags": []
+}
